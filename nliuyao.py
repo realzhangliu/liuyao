@@ -11,8 +11,11 @@ class liuyao:
 		self.cntoint={u'少阳-----':'1',u'少阴-- --':'2',u'老阳--O--':'3',u'老阴--X--':'4'}
 		self.tfont=tkFont.Font(family='Fixdsys',size=25,weight=tkFont.BOLD)
 		self.gfont=tkFont.Font(family='Fixdsys',size=13,weight=tkFont.BOLD)
-		self.dgua=[]
-		self.gua=[]
+		self.dgua=[] #动爻
+		self.ygua=[] #原始卦
+		self.bbgua=[] #变卦
+		self.yguastr=[] #原始卦
+		self.gua=[] #只有12的卦
 		self.pabout=True #右键显示消失淮南标题
 		self.guax=200
 		self.guay=100
@@ -38,8 +41,9 @@ class liuyao:
 		bt1=Button(root,text=u'排盘',command=self.paipan)
 		# bt1.place(relx=0.85,rely=0.35+0.7)
 		bt1.pack(side='right')
-		self.root.bind('<Button-3>',self.test)
 		self.date() #干支
+		#===========================
+		self.root.bind('<Button-3>',self.about)
 
 	def liushenf(self):  #配六神
 		xu=self.liushen[self.ritian.encode('utf-8')]
@@ -59,7 +63,7 @@ class liuyao:
 		wanzu.append(zu.split(' ')[2])
 		wanzu.append(zu.split(' ')[3])
 		for i in xrange(3):
-			print wanzu[i]
+			# print u'干支',wanzu[i]
 			self.canvas.create_text(self.guax-90+60*i,30,text=wanzu[i],font=self.gfont,tag='riqi')
 		ri=wanzu[2]
 		self.ritian=list(ri)[0]
@@ -67,7 +71,7 @@ class liuyao:
 		self.kongwang()
 
 	def kongwang(self):
-		print self.ridi,self.ritian
+		print u'日干支：',self.ridi,self.ritian
 		cha=self.dizhi[self.ridi.encode('utf-8')]-self.tiangan[self.ritian.encode('utf-8')]
 		if cha<0:
 			cha+=+10
@@ -76,10 +80,10 @@ class liuyao:
 		self.canvas.create_text(self.guax-90+120+30+30,30,font=self.gfont,text=self.kongwangzu[cha-1],tag='riqi')
 		self.canvas.create_text(self.guax-90+120+30+45,30,font=self.gfont,text=')',tag='riqi')
 
-	def test(self,event):
+	def about(self,event):
 		if self.pabout:
 			self.canvas.create_text(self.guax,100+250,text='淮南法教专用水印',fill='tan',font=self.tfont,tag='about')
-			self.canvas.create_text(self.guax+140,370,text='--无名',tag='about')
+			self.canvas.create_text(self.guax+140,370,text='--无名',fill='tan',tag='about')
 			self.pabout=False
 		else:
 			self.canvas.delete('about')
@@ -88,10 +92,25 @@ class liuyao:
 
 	def paipan(self):
 		for i in xrange(6):
-			self.gua.append(self.cntoint[self.com[i].get()]) #得到原始爻名，转换为1234，添加入gua
+			self.ygua.append(self.cntoint[self.com[i].get()]) #得到原始爻名，转换为1234，添加入gua
+		self.gua=self.ygua
+		bbgua=self.gua
+		print '======================='
+		print 'sel.gua',self.gua
+		for i in xrange(6):
+			if self.ygua[i]=='3':
+				self.gua[i]='1'
+				self.dgua.append(str(i))
+				self.dgua.append('1') 
+			elif  self.ygua[i]=='4':
+				self.gua[i]='2'
+				self.dgua.append(str(i))
+				self.dgua.append('2')
 		self.guastr=''.join(self.gua)
-		print self.guastr
-		print self.gua
+		# print u'变卦',bbgua
+		print u'字符串卦数',self.guastr
+		print u'数列卦',self.gua
+		print u'动卦',self.dgua
 		# print gua64[guastr]
 		self.draw()
 		self.liushenf()#六神
@@ -100,21 +119,30 @@ class liuyao:
 	def draw(self):
 		self.canvas.delete('pic')   #删除所有上次产生的ITEMS
 		self.canvas.delete('liushen')
-		print self.canvas.find_all()
+		print u'当前itme数',self.canvas.find_all()
+		#本卦
 		for i in xrange(6):
 			if self.gua[i]=='1':
 				self.canvas.create_image(self.guax,100+150-30*i,image=self.picyang,tag='pic')
 			else:
-				self.canvas.create_image(self.guax,100+150-30*i,image=self.picyin,tag='pic')
+				self.canvas.create_image(self.guax,100+150-30*i,image=self.picyin,tag='pic')	
+		
 				#下面是六亲
 		for i in xrange(6):
 			self.canvas.create_text(self.guax-70,100+30*i,font=self.gfont,text=gua64[self.guastr][i],tag='pic')
+
+			#动爻标记
+		for i in xrange(0,len(self.dgua),2):
+			if self.dgua[i+1]=='1':
+				self.canvas.create_text(self.guax+70,250-30*int(self.dgua[i]),font=self.gfont,text='O',tag='pic')
+			else:
+				self.canvas.create_text(self.guax+70,250-30*int(self.dgua[i]),font=self.gfont,text='X',tag='pic')
 			#世
 		syw=gua64[self.guastr][6]
-		self.canvas.create_text(self.guax+80,280-30*syw,font=self.gfont,text='世',tag='pic')
+		self.canvas.create_text(self.guax+55,280-30*syw,font=self.gfont,text='世',tag='pic')
 			#应
 		yyw=gua64[self.guastr][7]
-		self.canvas.create_text(self.guax+80,280-30*yyw,font=self.gfont,text='应',tag='pic')
+		self.canvas.create_text(self.guax+55,280-30*yyw,font=self.gfont,text='应',tag='pic')
 			#六合、冲
 		hc=gua64[self.guastr][8]
 		self.canvas.create_text(self.guax-70,100-30,font=self.gfont,text=hc,tag='pic')
@@ -124,8 +152,43 @@ class liuyao:
 			#卦宫
 		gg=gua64[self.guastr][10]
 		self.canvas.create_text(self.guax,100-30,font=self.gfont,text=gg,tag='pic')
-		self.gua=[]
+		#变卦	
+		self.biangua()
 		self.guastr=''
+		self.dgua=[] #动爻
+		self.ygua=[] #原始卦
+		self.bbgua=[] #变卦
+		self.yguastr=[] #原始卦
+		self.gua=[] #只有12的卦
+
+	def biangua(self):
+		self.bbgua=self.gua
+		# print 'biangua',self.bbgua
+		'''
+sel.gua ['4', '4', '3', '3', '4', '3']
+字符串卦数 221121
+数列卦 ['2', '2', '1', '1', '2', '1']
+动卦 ['0', '2', '1', '2', '2', '1', '3', '1', '4', '2', '5', '1']
+当前itme数 (1, 2, 3, 4, 5, 6, 7)
+biangua ['1', '1', '2', '2', '1', '2']
+bguastr 112212
+		'''
+		for i in xrange(0,len(self.dgua),2):
+			if self.dgua[i+1]=='1':
+				self.bbgua[int(self.dgua[i])]='2'
+			else:
+				self.bbgua[int(self.dgua[i])]='1'
+		print 'biangua',self.bbgua
+		self.bguastr=''.join(self.bbgua)
+		print 'bguastr',self.bguastr
+		for i in xrange(6):
+			if self.bbgua[i]=='1':
+				self.canvas.create_image(self.guax+130,100+150-30*i,image=self.picyang,tag='pic')
+			else:
+				self.canvas.create_image(self.guax+130,100+150-30*i,image=self.picyin,tag='pic')
+						#下面是六亲
+		for i in xrange(6):
+			self.canvas.create_text(self.guax+200,100+30*i,font=self.gfont,text=gua64[self.bguastr][i],tag='pic')
 
 
 win=Tk()
