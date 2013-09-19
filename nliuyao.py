@@ -1,7 +1,7 @@
 #coding=utf-8
 from liuyaodata import gua64
-from Tkinter import *
-from ttk import *
+from Tkinter import Button,Canvas,Tk,PhotoImage,mainloop
+from ttk import Combobox
 from bs4 import BeautifulSoup
 import tkFont
 import urllib2
